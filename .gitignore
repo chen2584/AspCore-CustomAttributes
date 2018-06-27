@@ -1,0 +1,12 @@
+.paket
+.paket-files
+bin
+obj
+.DS_Store
+tools
+packages
+bin
+obj
+logs
+temp
+publish
