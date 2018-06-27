@@ -12,12 +12,13 @@ namespace chen2584.CustomAttributes
     public class OutputCacheAttribute : ActionFilterAttribute
     {
         private static MemoryCache cache = new MemoryCache(new MemoryCacheOptions());
+        private static JsonSerializerSettings jsonSettings = new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() };
         public int Duration { get; set; } = 30;
 
         public override void OnActionExecuting(ActionExecutingContext context)
         {
-            string caseKey = $"{context.RouteData.Values["controller"].ToString()}-{context.RouteData.Values["action"].ToString()}";
-            if (cache.TryGetValue(caseKey, out OutputCacheModel outputCache))
+            string cacheKey = $"{context.RouteData.Values["controller"].ToString()}-{context.RouteData.Values["action"].ToString()}";
+            if (cache.TryGetValue(cacheKey, out OutputCacheModel outputCache))
             {
                 context.Result = new ContentResult
                 {
@@ -36,7 +37,8 @@ namespace chen2584.CustomAttributes
             {
                 if (context.Result is ObjectResult objectResult)
                 {
-                    var outputCache = new OutputCacheModel() { Content = objectResult.Value.ToString(), ContentType = context.HttpContext.Response.ContentType, StatusCode = context.HttpContext.Response.StatusCode };
+                    string value = context.HttpContext.Response.ContentType.StartsWith("application/json") ? JsonConvert.SerializeObject(objectResult.Value, jsonSettings) : objectResult.Value.ToString();
+                    var outputCache = new OutputCacheModel() { Content = value, ContentType = context.HttpContext.Response.ContentType, StatusCode = context.HttpContext.Response.StatusCode };
                     cache.Set(cacheKey, outputCache, new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromSeconds(Duration)));
                 }
                 else if (context.Result is ViewResult viewResult)
