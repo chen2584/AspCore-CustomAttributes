@@ -12,3 +12,4 @@ temp
 publish
 *.nuspec
 *.nupkg
+lib
