@@ -8,9 +8,7 @@ Are you missing OutputCache attribute on ASP.NET MVC?, Here is my own OutputCach
 [OutputCache(Duration=30)] //where 30 = seconds before cache expire.
 public ActionResult Index()
 {
-    var result = new { FirstName = "Chen", LastName = "Angelo" };
-    Console.WriteLine("In Action Main");
-    return Ok(result);
+    return View();
 }
 ```
 
