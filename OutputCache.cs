@@ -12,17 +12,18 @@ using Newtonsoft.Json.Serialization;
 
 namespace chen2584.CustomAttributes
 {
-    public class OutputCacheAttribute : ActionFilterAttribute
+    public class OutputCacheAttribute : Attribute, IResourceFilter
     {
         private static MemoryCache cache = new MemoryCache(new MemoryCacheOptions());
         private static JsonSerializerSettings jsonSettings = new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() };
         public int Duration { get; set; } = 30;
 
-        public override void OnActionExecuting(ActionExecutingContext context)
+        public void OnResourceExecuting(ResourceExecutingContext context)
         {
             string cacheKey = $"{context.RouteData.Values["controller"].ToString()}-{context.RouteData.Values["action"].ToString()}";
             if (cache.TryGetValue(cacheKey, out OutputCacheModel outputCache))
             {
+                Console.WriteLine("respond cache");
                 context.Result = new ContentResult
                 {
                     ContentType = outputCache.ContentType,
@@ -32,7 +33,7 @@ namespace chen2584.CustomAttributes
             }
         }
 
-        public override async void OnResultExecuted(ResultExecutedContext context)
+        public async void OnResourceExecuted(ResourceExecutedContext context)
         {
             string cacheKey = $"{context.RouteData.Values["controller"].ToString()}-{context.RouteData.Values["action"].ToString()}";
             if (cache.Get(cacheKey) == null)
